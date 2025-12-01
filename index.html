@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대학동기 대화 분석 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .card .value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .person-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .person-card {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .person-card:hover {
+            transform: scale(1.02);
+        }
+
+        .person-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .person-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .job-badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        .confidence {
+            font-size: 0.8em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .emotion-bar {
+            display: flex;
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .emotion-positive {
+            background: #4caf50;
+        }
+
+        .emotion-neutral {
+            background: #9e9e9e;
+        }
+
+        .emotion-negative {
+            background: #f44336;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-top: 20px;
+        }
+
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .keyword-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 대학동기 대화 분석 대시보드</h1>
+        
+        <div class="summary-cards">
+            <div class="card">
+                <h3>총 메시지 수</h3>
+                <div class="value" id="totalMessages">-</div>
+            </div>
+            <div class="card">
+                <h3>참여자 수</h3>
+                <div class="value" id="totalPeople">-</div>
+            </div>
+            <div class="card">
+                <h3>분석 기간</h3>
+                <div class="value" id="dateRange" style="font-size: 1.2em;">-</div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 월별 개인별 대화량 추이</h2>
+            <div class="filter-buttons" id="personFilters"></div>
+            <div class="chart-container">
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👥 개인별 상세 분석</h2>
+            <div class="person-grid" id="personGrid"></div>
+        </div>
+
+        <div class="section">
+            <h2>📈 전체 월별 대화량</h2>
+            <div class="chart-container">
+                <canvas id="totalMonthlyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>💼 예상 직업 분포</h2>
+            <div class="chart-container">
+                <canvas id="jobDistributionChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let analysisData = null;
+        let monthlyTrendChart = null;
+        let totalMonthlyChart = null;
+        let jobDistributionChart = null;
+
+        // JSON 파일 로드
+        async function loadData() {
+            try {
+                const response = await fetch('analysis_result.json');
+                analysisData = await response.json();
+                renderDashboard();
+            } catch (error) {
+                document.body.innerHTML = '<div class="loading">데이터를 불러올 수 없습니다. analysis_result.json 파일이 필요합니다.</div>';
+                console.error('Error loading data:', error);
+            }
+        }
+
+        function renderDashboard() {
+            renderSummary();
+            renderPersonFilters();
+            renderMonthlyTrendChart();
+            renderTotalMonthlyChart();
+            renderJobDistributionChart();
+            renderPersonCards();
+        }
+
+        function renderSummary() {
+            document.getElementById('totalMessages').textContent = analysisData.summary.total_messages.toLocaleString();
+            document.getElementById('totalPeople').textContent = analysisData.summary.total_people;
+            const start = analysisData.summary.date_range.start;
+            const end = analysisData.summary.date_range.end;
+            document.getElementById('dateRange').textContent = `${start} ~ ${end}`;
+        }
+
+        function renderPersonFilters() {
+            const filterContainer = document.getElementById('personFilters');
+            filterContainer.innerHTML = '<button class="filter-btn active" data-person="all">전체</button>';
+            
+            analysisData.people.forEach(person => {
+                const btn = document.createElement('button');
+                btn.className = 'filter-btn';
+                btn.textContent = person.name;
+                btn.dataset.person = person.name;
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    renderMonthlyTrendChart(btn.dataset.person);
+                });
+                filterContainer.appendChild(btn);
+            });
+        }
+
+        function renderMonthlyTrendChart(selectedPerson = 'all') {
+            const ctx = document.getElementById('monthlyTrendChart').getContext('2d');
+            
+            // 모든 월 수집
+            const allMonths = new Set();
+            analysisData.people.forEach(person => {
+                person.monthly_trend.forEach(item => allMonths.add(item.month));
+            });
+            const sortedMonths = Array.from(allMonths).sort();
+
+            const datasets = [];
+            const colors = [
+                '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a',
+                '#fee140', '#30cfd0', '#a8edea', '#fed6e3', '#ffecd2', '#fcb69f'
+            ];
+
+            if (selectedPerson === 'all') {
+                analysisData.people.forEach((person, index) => {
+                    const data = sortedMonths.map(month => {
+                        const item = person.monthly_trend.find(m => m.month === month);
+                        return item ? item.count : 0;
+                    });
+                    
+                    datasets.push({
+                        label: person.name,
+                        data: data,
+                        borderColor: colors[index % colors.length],
+                        backgroundColor: colors[index % colors.length] + '20',
+                        tension: 0.4,
+                        fill: false
+                    });
+                });
+            } else {
+                const person = analysisData.people.find(p => p.name === selectedPerson);
+                if (person) {
+                    const data = sortedMonths.map(month => {
+                        const item = person.monthly_trend.find(m => m.month === month);
+                        return item ? item.count : 0;
+                    });
+                    
+                    datasets.push({
+                        label: person.name,
+                        data: data,
+                        borderColor: '#667eea',
+                        backgroundColor: '#667eea20',
+                        tension: 0.4,
+                        fill: true
+                    });
+                }
+            }
+
+            if (monthlyTrendChart) {
+                monthlyTrendChart.destroy();
+            }
+
+            monthlyTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: sortedMonths,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '월별 메시지 수 추이'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 50
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderTotalMonthlyChart() {
+            const ctx = document.getElementById('totalMonthlyChart').getContext('2d');
+            
+            const monthlyTotal = {};
+            analysisData.people.forEach(person => {
+                person.monthly_trend.forEach(item => {
+                    monthlyTotal[item.month] = (monthlyTotal[item.month] || 0) + item.count;
+                });
+            });
+
+            const sortedMonths = Object.keys(monthlyTotal).sort();
+            const data = sortedMonths.map(month => monthlyTotal[month]);
+
+            if (totalMonthlyChart) {
+                totalMonthlyChart.destroy();
+            }
+
+            totalMonthlyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{
+                        label: '전체 메시지 수',
+                        data: data,
+                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
+                        borderColor: 'rgba(102, 126, 234, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: '월별 전체 메시지 수'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderJobDistributionChart() {
+            const ctx = document.getElementById('jobDistributionChart').getContext('2d');
+            
+            const jobCount = {};
+            analysisData.people.forEach(person => {
+                const job = person.predicted_job;
+                jobCount[job] = (jobCount[job] || 0) + 1;
+            });
+
+            const colors = [
+                '#667eea', '#f093fb', '#4facfe', '#43e97b', '#fa709a',
+                '#fee140', '#30cfd0', '#a8edea', '#fed6e3', '#ffecd2'
+            ];
+
+            if (jobDistributionChart) {
+                jobDistributionChart.destroy();
+            }
+
+            jobDistributionChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(jobCount),
+                    datasets: [{
+                        data: Object.values(jobCount),
+                        backgroundColor: colors.slice(0, Object.keys(jobCount).length),
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: '예상 직업 분포'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderPersonCards() {
+            const grid = document.getElementById('personGrid');
+            grid.innerHTML = '';
+
+            analysisData.people.forEach(person => {
+                const card = document.createElement('div');
+                card.className = 'person-card';
+
+                const totalEmotions = person.emotions.positive + person.emotions.neutral + person.emotions.negative;
+                const positiveRatio = totalEmotions > 0 ? (person.emotions.positive / totalEmotions * 100).toFixed(1) : 0;
+                const neutralRatio = totalEmotions > 0 ? (person.emotions.neutral / totalEmotions * 100).toFixed(1) : 0;
+                const negativeRatio = totalEmotions > 0 ? (person.emotions.negative / totalEmotions * 100).toFixed(1) : 0;
+
+                card.innerHTML = `
+                    <div class="person-name">${person.name}</div>
+                    <div class="person-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">메시지 수</div>
+                            <div class="stat-value">${person.total_messages.toLocaleString()}</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">평균 길이</div>
+                            <div class="stat-value">${person.avg_message_length}</div>
+                        </div>
+                    </div>
+                    <div class="job-badge">
+                        💼 ${person.predicted_job}
+                        <div class="confidence">신뢰도: ${person.job_confidence}%</div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <div style="font-size: 0.9em; margin-bottom: 5px; color: #666;">감정 분포</div>
+                        <div class="emotion-bar">
+                            <div class="emotion-positive" style="width: ${positiveRatio}%" title="긍정: ${positiveRatio}%"></div>
+                            <div class="emotion-neutral" style="width: ${neutralRatio}%" title="중립: ${neutralRatio}%"></div>
+                            <div class="emotion-negative" style="width: ${negativeRatio}%" title="부정: ${negativeRatio}%"></div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <div style="font-size: 0.9em; margin-bottom: 5px; color: #666;">주요 키워드</div>
+                        <div class="keywords">
+                            ${person.top_keywords.slice(0, 5).map(kw => 
+                                `<span class="keyword-tag">${kw.word} (${kw.count})</span>`
+                            ).join('')}
+                        </div>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        // 페이지 로드 시 데이터 로드
+        loadData();
+    </script>
+</body>
+</html>
+
