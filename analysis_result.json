@@ -101,6 +101,13 @@
         "언론/미디어": 1,
         "연구/분석": 8
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (2회)",
+        "자녀 관련 언급 (4회)",
+        "경력 관련 언급 (1회)"
+      ],
       "emotion_ratio": {
         "positive": 6.260869565217392,
         "neutral": 92.43478260869566,
@@ -204,6 +211,13 @@
         "언론/미디어": 5,
         "연구/분석": 4
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (2회)",
+        "자녀 관련 언급 (5회)",
+        "경력 관련 언급 (6회)"
+      ],
       "emotion_ratio": {
         "positive": 65.17094017094017,
         "neutral": 33.11965811965812,
@@ -305,6 +319,12 @@
         "언론/미디어": 4,
         "연구/분석": 17
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "자녀 관련 언급 (5회)",
+        "경력 관련 언급 (5회)"
+      ],
       "emotion_ratio": {
         "positive": 26.81660899653979,
         "neutral": 70.41522491349481,
@@ -401,6 +421,13 @@
         "언론/미디어": 3,
         "연구/분석": 4
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (3회)",
+        "자녀 관련 언급 (4회)",
+        "경력 관련 언급 (2회)"
+      ],
       "emotion_ratio": {
         "positive": 14.56953642384106,
         "neutral": 82.78145695364239,
@@ -494,6 +521,13 @@
         "공공기관/공무원": 8,
         "연구/분석": 11
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (1회)",
+        "자녀 관련 언급 (2회)",
+        "경력 관련 언급 (4회)"
+      ],
       "emotion_ratio": {
         "positive": 14.241486068111456,
         "neutral": 83.28173374613003,
@@ -595,6 +629,13 @@
         "언론/미디어": 5,
         "연구/분석": 8
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (4회)",
+        "자녀 관련 언급 (3회)",
+        "경력 관련 언급 (3회)"
+      ],
       "emotion_ratio": {
         "positive": 8.934707903780069,
         "neutral": 89.3470790378007,
@@ -687,6 +728,12 @@
         "공공기관/공무원": 3,
         "언론/미디어": 5
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (1회)",
+        "자녀 관련 언급 (2회)"
+      ],
       "emotion_ratio": {
         "positive": 28.28282828282828,
         "neutral": 68.18181818181817,
@@ -781,6 +828,11 @@
         "교육": 1,
         "의료": 1
       },
+      "predicted_age": 35,
+      "age_range": "35-40세",
+      "age_clues": [
+        "자녀 관련 언급 (2회)"
+      ],
       "emotion_ratio": {
         "positive": 15.757575757575756,
         "neutral": 79.39393939393939,
@@ -873,6 +925,12 @@
         "언론/미디어": 1,
         "연구/분석": 1
       },
+      "predicted_age": 42,
+      "age_range": "40-45세",
+      "age_clues": [
+        "결혼 관련 언급 (1회)",
+        "자녀 관련 언급 (1회)"
+      ],
       "emotion_ratio": {
         "positive": 20.88607594936709,
         "neutral": 77.21518987341773,
@@ -944,6 +1002,9 @@
       "predicted_job": "미정",
       "job_confidence": 0,
       "job_scores": {},
+      "predicted_age": 28,
+      "age_range": "25-30세",
+      "age_clues": [],
       "emotion_ratio": {
         "positive": 16.666666666666664,
         "neutral": 83.33333333333334,
@@ -975,6 +1036,9 @@
       "predicted_job": "미정",
       "job_confidence": 0,
       "job_scores": {},
+      "predicted_age": 28,
+      "age_range": "25-30세",
+      "age_clues": [],
       "emotion_ratio": {
         "positive": 100.0,
         "neutral": 0.0,

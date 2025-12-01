@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS participants (
     avg_message_length NUMERIC(10, 2) DEFAULT 0,
     predicted_job VARCHAR(100),
     job_confidence NUMERIC(5, 2) DEFAULT 0,
+    predicted_age INTEGER,
+    age_range VARCHAR(20),
     emotion_positive INTEGER DEFAULT 0,
     emotion_neutral INTEGER DEFAULT 0,
     emotion_negative INTEGER DEFAULT 0,

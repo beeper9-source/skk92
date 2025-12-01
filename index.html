@@ -530,6 +530,12 @@
                         💼 ${person.predicted_job}
                         <div class="confidence">신뢰도: ${person.job_confidence}%</div>
                     </div>
+                    <div class="job-badge" style="background: #43e97b; margin-top: 10px;">
+                        🎂 예상 나이: ${person.age_range || '미정'}
+                        ${person.age_clues && person.age_clues.length > 0 ? 
+                            `<div class="confidence" style="font-size: 0.75em; margin-top: 3px;">${person.age_clues.join(', ')}</div>` : 
+                            ''}
+                    </div>
                     <div style="margin-top: 15px;">
                         <div style="font-size: 0.9em; margin-bottom: 5px; color: #666;">감정 분포</div>
                         <div class="emotion-bar">

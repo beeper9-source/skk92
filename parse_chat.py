@@ -122,6 +122,90 @@ def analyze_messages(messages):
     
     return stats
 
+def predict_age(name, person_stats):
+    """대화 내용을 기반으로 예상 나이 추론"""
+    messages = person_stats['messages']
+    all_content = ' '.join([msg['content'].lower() for msg in messages])
+    
+    age_score = 0
+    age_clues = []
+    
+    # 결혼 관련 단서 (30대 중반~40대)
+    marriage_keywords = ['와이프', '남편', '아내', '결혼', '부인', '배우자']
+    marriage_count = sum(1 for kw in marriage_keywords if kw in all_content)
+    if marriage_count > 0:
+        age_score += 35  # 결혼했다면 대략 30대 중반 이상
+        age_clues.append(f'결혼 관련 언급 ({marriage_count}회)')
+    
+    # 자녀 관련 단서 (30대 후반~40대)
+    children_keywords = ['아이', '자녀', '아들', '딸', '애기', '아기', '아가', '자식']
+    children_count = sum(1 for kw in children_keywords if kw in all_content)
+    if children_count > 0:
+        age_score += 38  # 자녀가 있다면 대략 30대 후반 이상
+        age_clues.append(f'자녀 관련 언급 ({children_count}회)')
+    
+    # 경력 관련 단서
+    career_keywords = ['과장', '부장', '차장', '팀장', '경력', '입사', '퇴사', '승진']
+    career_count = sum(1 for kw in career_keywords if kw in all_content)
+    if career_count > 0:
+        age_score += 32  # 중간 관리직이면 30대 이상
+        age_clues.append(f'경력 관련 언급 ({career_count}회)')
+    
+    # 직업 기반 추론 (기본 점수에 추가하는 방식으로 변경)
+    predicted_job, _, _ = predict_job(name, person_stats)
+    if predicted_job == '공공기관/공무원':
+        # 공무원은 보통 20대 후반~30대 초반 입사, 경력 쌓으면 30대 중반 이상
+        if career_count > 0:
+            age_score += 5  # 경력이 있으면 조금 더
+        else:
+            age_score += 2  # 기본 점수만
+    elif predicted_job in ['의료', '법률']:
+        # 전문직은 보통 30대 중반 이상
+        age_score += 5
+    elif predicted_job == '연구/분석':
+        # 연구직은 보통 30대 초반 이상
+        age_score += 3
+    
+    # 대화 스타일 분석
+    # 짧은 메시지가 많으면 젊은 세대일 가능성 (20대 후반~30대 초반)
+    avg_length = person_stats['word_count'] / person_stats['count'] if person_stats['count'] > 0 else 0
+    if avg_length < 3:
+        age_score -= 3  # 젊은 세대일 가능성
+    elif avg_length > 6:
+        age_score += 2  # 좀 더 성숙한 세대일 가능성
+    
+    # 이모티콘 사용 빈도 (젊을수록 많이 사용)
+    emoji_count = sum(1 for msg in messages if '이모티콘' in msg['content'])
+    emoji_ratio = emoji_count / person_stats['count'] if person_stats['count'] > 0 else 0
+    if emoji_ratio > 0.3:
+        age_score -= 2  # 젊은 세대일 가능성
+    
+    # 나이 범위 추정 (점수를 더 세밀하게 조정)
+    # 기본 나이를 30세로 시작하고 점수에 따라 조정
+    base_age = 30
+    
+    if age_score == 0:
+        # 단서가 없으면 기본값 (대학동기이므로 비슷한 연령대 가정)
+        estimated_age = 32
+        age_range = "30-35세"
+    elif age_score < 25:
+        estimated_age = base_age - 2
+        age_range = "25-30세"
+    elif age_score < 35:
+        estimated_age = base_age
+        age_range = "30-35세"
+    elif age_score < 45:
+        estimated_age = base_age + 5
+        age_range = "35-40세"
+    elif age_score < 55:
+        estimated_age = base_age + 10
+        age_range = "40-45세"
+    else:
+        estimated_age = base_age + 12
+        age_range = "40-45세"
+    
+    return estimated_age, age_range, age_clues
+
 def predict_job(name, person_stats):
     """대화 내용을 기반으로 예상 직업 추론"""
     messages = person_stats['messages']
@@ -191,6 +275,9 @@ def generate_analysis_report(messages, stats):
         # 예상 직업
         predicted_job, confidence, job_scores = predict_job(name, person_stats)
         
+        # 예상 나이
+        estimated_age, age_range, age_clues = predict_age(name, person_stats)
+        
         # 대화 성향 분석
         total_emotions = sum(person_stats['emotions'].values())
         emotion_ratio = {
@@ -212,6 +299,9 @@ def generate_analysis_report(messages, stats):
             'predicted_job': predicted_job,
             'job_confidence': round(confidence, 1),
             'job_scores': job_scores,
+            'predicted_age': estimated_age,
+            'age_range': age_range,
+            'age_clues': age_clues,
             'emotion_ratio': emotion_ratio,
             'emotions': person_stats['emotions']
         })
@@ -244,6 +334,7 @@ if __name__ == '__main__':
     for person in report['people']:
         print(f"{person['name']}: {person['total_messages']}개 메시지")
         print(f"  예상 직업: {person['predicted_job']} (신뢰도: {person['job_confidence']:.1f}%)")
+        print(f"  예상 나이: {person['age_range']} (추정: {person['predicted_age']}세)")
         print(f"  평균 메시지 길이: {person['avg_message_length']:.1f}단어")
         print()
 

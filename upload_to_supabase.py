@@ -41,6 +41,8 @@ def upload_to_supabase():
             'avg_message_length': person['avg_message_length'],
             'predicted_job': person['predicted_job'],
             'job_confidence': person['job_confidence'],
+            'predicted_age': person.get('predicted_age'),
+            'age_range': person.get('age_range'),
             'emotion_positive': person['emotions']['positive'],
             'emotion_neutral': person['emotions']['neutral'],
             'emotion_negative': person['emotions']['negative']
